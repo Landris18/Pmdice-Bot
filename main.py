@@ -38,6 +38,13 @@ def login():
     driver.find_element(by=By.ID, value="btnlogin").click()
 
 
+def setStrategy(strategy, chance):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys(Keys.BACKSPACE * 8)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys(strategy)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys(Keys.BACKSPACE * 8)
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys(chance)
+
+
 def checkReadyButton():
     buttonPlay = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "btnplaymb")))
     if ("DICE" in buttonPlay.text):
@@ -224,37 +231,26 @@ def start3(betMinAmount3, isDouble, numStart, i):
           
 
 if __name__ == "__main__":
-
     try:
         arg = sys.argv[1] 
 
-        if (arg == "--start1"):
+        if (arg == "--start1" or arg == "--start1" or arg == "--start1"):
             login()
-            betMinAmount1 = 0.001
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys(Keys.BACKSPACE * 8)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys("2x")
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys(Keys.BACKSPACE * 8)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys("48.02%")
-            start1(betMinAmount1, 1)
-        
-        if (arg == "--start2"):
-            login()
-            betMinAmount2 = 0.0001
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys(Keys.BACKSPACE * 8)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys("4x")
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys(Keys.BACKSPACE * 8)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys("24.01%")
-            start2(betMinAmount2, False, 1)
 
-        if (arg == "--start3"):
-            login()
-            betMinAmount3 = 0.0001
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys(Keys.BACKSPACE * 8)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutmul"))).send_keys("4x")
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys(Keys.BACKSPACE * 8)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "mfpayoutper"))).send_keys("24.01%")
-            start3(betMinAmount3, False, 0, 1)
-        
+            if (arg == "--start1"):
+                betMinAmount1 = 0.001
+                setStrategy("2x", "48.02%")
+                start1(betMinAmount1, 1)
+            
+            if (arg == "--start2"):
+                betMinAmount2 = 0.0001
+                setStrategy("4x", "24.01%")
+                start2(betMinAmount2, False, 1)
+
+            if (arg == "--start3"):
+                betMinAmount3 = 0.0001
+                setStrategy("4x", "24.01%")
+                start3(betMinAmount3, False, 0, 1)
         else:
             driver.close()
             print("Argument " + arg + " not recognized")
