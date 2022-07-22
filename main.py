@@ -234,7 +234,7 @@ if __name__ == "__main__":
     try:
         arg = sys.argv[1] 
 
-        if (arg == "--start1" or arg == "--start1" or arg == "--start1"):
+        if (arg == "--start1" or arg == "--start2" or arg == "--start3"):
             login()
 
             if (arg == "--start1"):
