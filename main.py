@@ -10,7 +10,7 @@ from selenium.webdriver.firefox.options import Options
 from os import environ as env
 from dotenv import load_dotenv
 import sys
-
+import requests
 
 load_dotenv()
 
@@ -25,6 +25,10 @@ stop = False
 
 def pageHasLoaded():
     return driver.execute_script('return document.readyState;') == 'complete'
+
+
+def isConnected():
+    return requests.get(env.get("LINK")).status_code == 200
 
 
 def login():
@@ -53,15 +57,19 @@ def checkReadyButton():
 
 
 def checkStatus():
-    res = 0
+    res = "not_rolled"
 
     try:
         labelStatus = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#mfplayresultout .label"))).text
 
         if ("Win" in labelStatus):
-            res = 1
-        elif ("Loss" in labelStatus):
-            res = -1
+            res = "win"
+        if ("Loss" in labelStatus):
+            res = "lose"
+        if ("Timeout" in labelStatus):
+            res = "timeout"
+        if ("Insufficient" in labelStatus):
+            res = "insufficient"
 
         return res
 
@@ -73,13 +81,14 @@ def start1(betMinAmount1, i):
     status = checkStatus()
 
     if checkReadyButton():
-        if (status > 0):
+        if (status == "win"):
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(betMinAmount1)
 
             WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.ID, "mfpayout_over"))).click()
             i += 1
-        elif (status < 0):
+
+        if (status == "lose"):
             betAmount = driver.find_element(by=By.ID, value="mfInputAmount").text
 
             if len(betAmount) != 0:
@@ -89,8 +98,23 @@ def start1(betMinAmount1, i):
                 
                 driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
                 driver.find_element(by=By.ID, value="mfInputAmount").send_keys(float(betAmount) * 2)
-        else:
-            print("Dice_not_rolled or not_enough_balance")
+
+        if (status == "timeout"):
+            reconnect = 10
+            for i in range (1,reconnect):
+                if not isConnected():
+                    sleep(4)
+                i += 1
+                if (i > reconnect -1):
+                    print(status)
+                    driver.close()
+                
+        if (status == "insufficient"):
+            print(status)
+            driver.close()
+
+        if (status == "not_rolled"):
+            print(status)
         
         sleep(0.5)
         driver.find_element(by=By.ID, value="btnplaymb").click()
@@ -118,13 +142,13 @@ def start2(betMinAmount2, isDouble, i) :
     status = checkStatus()
 
     if checkReadyButton():
-        if (status > 0):
+        if (status == "win"):
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(betMinAmount2)
 
             isDouble = False
             i += 1
-        elif (status < 0):
+        if (status == "lose"):
             betAmount = driver.find_element(by=By.ID, value="mfInputAmount").text
 
             if len(betAmount) != 0:
@@ -140,8 +164,23 @@ def start2(betMinAmount2, isDouble, i) :
                     driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
                     driver.find_element(by=By.ID, value="mfInputAmount").send_keys(float(betAmount))
                     isDouble = True
-        else:
-            print("Dice_not_rolled or not_enough_balance")
+
+        if (status == "timeout"):
+            reconnect = 10
+            for i in range (1,reconnect):
+                if not isConnected():
+                    sleep(4)
+                i += 1
+                if (i > reconnect -1):
+                    print(status)
+                    driver.close()
+                
+        if (status == "insufficient"):
+            print(status)
+            driver.close()
+
+        if (status == "not_rolled"):
+            print(status)
 
         sleep(0.5)
         driver.find_element(by=By.ID, value="btnplaymb").click()
@@ -170,7 +209,7 @@ def start3(betMinAmount3, isDouble, numStart, i):
     status = checkStatus()
 
     if checkReadyButton():
-        if (status > 0):
+        if (status == "win"):
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(0)
 
@@ -178,7 +217,7 @@ def start3(betMinAmount3, isDouble, numStart, i):
             numStart = 0
             i += 1
 
-        elif (status < 0):
+        if (status == "lose"):
             if (numStart <= 0):
                 betAmount = driver.find_element(by=By.ID, value="mfInputAmount").text
 
@@ -205,8 +244,23 @@ def start3(betMinAmount3, isDouble, numStart, i):
                 isDouble = False
 
             numStart -= 1
-        else:
-            print("Dice_not_rolled or not_enough_balance")
+
+        if (status == "timeout"):
+            reconnect = 10
+            for i in range (1,reconnect):
+                if not isConnected():
+                    sleep(4)
+                i += 1
+                if (i > reconnect -1):
+                    print(status)
+                    driver.close()
+                
+        if (status == "insufficient"):
+            print(status)
+            driver.close()
+
+        if (status == "not_rolled"):
+            print(status)
 
         sleep(0.3)
         driver.find_element(by=By.ID, value="btnplaymb").click()
@@ -231,31 +285,32 @@ def start3(betMinAmount3, isDouble, numStart, i):
           
 
 if __name__ == "__main__":
-    try:
-        arg = sys.argv[1] 
+    if isConnected():
+        try:
+            arg = sys.argv[1] 
 
-        if (arg == "--start1" or arg == "--start2" or arg == "--start3"):
-            login()
+            if (arg == "--start1" or arg == "--start2" or arg == "--start3"):
+                login()
 
-            if (arg == "--start1"):
-                betMinAmount1 = 0.001
-                setStrategy("2x", "48.02%")
-                start1(betMinAmount1, 1)
-            
-            if (arg == "--start2"):
-                betMinAmount2 = 0.0001
-                setStrategy("4x", "24.01%")
-                start2(betMinAmount2, False, 1)
+                if (arg == "--start1"):
+                    betMinAmount1 = 0.001
+                    setStrategy("2x", "48.02%")
+                    start1(betMinAmount1, 1)
+                
+                if (arg == "--start2"):
+                    betMinAmount2 = 0.0001
+                    setStrategy("4x", "24.01%")
+                    start2(betMinAmount2, False, 1)
 
-            if (arg == "--start3"):
-                betMinAmount3 = 0.0001
-                setStrategy("4x", "24.01%")
-                start3(betMinAmount3, False, 0, 1)
-        else:
+                if (arg == "--start3"):
+                    betMinAmount3 = 0.0001
+                    setStrategy("4x", "24.01%")
+                    start3(betMinAmount3, False, 0, 1)
+            else:
+                driver.close()
+                print("Argument " + arg + " not recognized")
+                print("Expected argument are --start1 | --start2 | --start3")
+
+        except IndexError:
             driver.close()
-            print("Argument " + arg + " not recognized")
             print("Expected argument are --start1 | --start2 | --start3")
-
-    except IndexError:
-        driver.close()
-        print("Expected argument are --start1 | --start2 | --start3")
