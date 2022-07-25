@@ -1,3 +1,4 @@
+from glob import glob
 import math
 import random
 from time import sleep
@@ -15,12 +16,15 @@ import requests
 load_dotenv()
 
 FirefoxOptions = Options()
-FirefoxOptions.headless = False
+FirefoxOptions.headless = True
 
 driver = webdriver.Firefox(options=FirefoxOptions)
 driver.get(env.get("LINK"))
 
 stop = False
+
+WIN = 0
+LOSE = 0
 
 
 def pageHasLoaded():
@@ -29,6 +33,11 @@ def pageHasLoaded():
 
 def isConnected():
     return requests.get(env.get("LINK")).status_code == 200
+
+
+def showStat():
+    print("-------Number of WIN-------- : ", WIN)
+    print("-------Nomber of LOSS------- : ", LOSE)
 
 
 def login():
@@ -57,14 +66,18 @@ def checkReadyButton():
 
 
 def checkStatus():
+    global WIN
+    global LOSE
     res = "not_rolled"
 
     try:
         labelStatus = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "#mfplayresultout .label"))).text
-
+        
         if ("Win" in labelStatus):
+            WIN += 1
             res = "win"
         if ("Loss" in labelStatus):
+            LOSE += 1
             res = "lose"
         if ("Timeout" in labelStatus):
             res = "timeout"
@@ -93,8 +106,7 @@ def start1(betMinAmount1, i):
 
             if len(betAmount) != 0:
                 if ((float(betAmount) / betMinAmount1) >= 1024):
-                    # showAlertMessage();
-                    pass
+                    print("Condition verified")
                 
                 driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
                 driver.find_element(by=By.ID, value="mfInputAmount").send_keys(float(betAmount) * 2)
@@ -107,10 +119,12 @@ def start1(betMinAmount1, i):
                 i += 1
                 if (i > reconnect -1):
                     print(status)
+                    showStat()
                     driver.close()
                 
         if (status == "insufficient"):
             print(status)
+            showStat()
             driver.close()
 
         if (status == "not_rolled"):
@@ -153,8 +167,7 @@ def start2(betMinAmount2, isDouble, i) :
 
             if len(betAmount) != 0:
                 if ((float(betAmount) / betMinAmount1) >= 4096):
-                    # showAlertMessage();
-                    pass
+                    print("Condition verified")
 
                 if isDouble:
                     driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
@@ -173,10 +186,12 @@ def start2(betMinAmount2, isDouble, i) :
                 i += 1
                 if (i > reconnect -1):
                     print(status)
+                    showStat()
                     driver.close()
                 
         if (status == "insufficient"):
             print(status)
+            showStat()
             driver.close()
 
         if (status == "not_rolled"):
@@ -227,8 +242,7 @@ def start3(betMinAmount3, isDouble, numStart, i):
                         betAmount = betMinAmount3
 
                     if ((betAmount / betMinAmount3) >= 4096):
-                        pass
-                        # showAlertMessage();
+                        print("Condition verified")
 
                     if (isDouble and numStart <= -2):
                         driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
@@ -253,10 +267,12 @@ def start3(betMinAmount3, isDouble, numStart, i):
                 i += 1
                 if (i > reconnect -1):
                     print(status)
+                    showStat()
                     driver.close()
                 
         if (status == "insufficient"):
             print(status)
+            showStat()
             driver.close()
 
         if (status == "not_rolled"):
