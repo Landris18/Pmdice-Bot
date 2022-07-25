@@ -1,4 +1,3 @@
-from glob import glob
 import math
 import random
 from time import sleep
@@ -22,7 +21,6 @@ driver = webdriver.Firefox(options=FirefoxOptions)
 driver.get(env.get("LINK"))
 
 stop = False
-
 WIN = 0
 LOSE = 0
 
