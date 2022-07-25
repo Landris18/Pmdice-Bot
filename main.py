@@ -96,7 +96,8 @@ def start1(betMinAmount1, i):
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(Keys.BACKSPACE * 8)
             driver.find_element(by=By.ID, value="mfInputAmount").send_keys(betMinAmount1)
 
-            WebDriverWait(driver, 15).until(EC.element_to_be_clickable((By.ID, "mfpayout_over"))).click()
+            driver.execute_script("arguments[0].click()", driver.find_element(by=By.ID, value="mfpayout_over"))
+            
             i += 1
 
         if (status == "lose"):
